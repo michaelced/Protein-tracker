@@ -1,49 +1,49 @@
 import streamlit as st
 
-# Configure the page with iOS-inspired layout feel
+# Configure the page with Dark Mode iOS aesthetic
 st.set_page_config(
     page_title="Protein Tracker", 
     page_icon="⚡",
     layout="centered"
 )
 
-# Custom CSS for standard high-contrast readability (forcing dark text on light cards)
+# Custom CSS for Dark iOS Theme (OLED Black background with dark gray cards and high contrast text)
 st.markdown("""
 <style>
     /* Global app background */
     .stApp {
-        background-color: #f2f2f7;
+        background-color: #000000;
+        color: #ffffff;
     }
     
     /* Hide default streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Container cards mimicking iOS grouped lists */
+    /* iOS Dark Mode grouped cards style */
     .ios-card {
-        background-color: #ffffff;
+        background-color: #1c1c1e;
         padding: 20px;
         border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         margin-bottom: 16px;
-        color: #1c1c1e;
+        color: #ffffff;
     }
     
-    /* Explicitly force all text inside markdown and headers to be dark and legible */
+    /* Ensure all card text, headers, and markdown are bright white and legible */
     .ios-card h3, .ios-card h4, .ios-card p, .ios-card span, .ios-card div {
-        color: #1c1c1e !important;
+        color: #ffffff !important;
     }
     
-    /* Fix standard Streamlit markdown text color inside the main app */
     .stMarkdown p, .stMarkdown span, label {
-        color: #1c1c1e !important;
+        color: #ffffff !important;
     }
     
     /* Metric styling */
     .metric-value {
         font-size: 28px;
         font-weight: 700;
-        color: #1c1c1e !important;
+        color: #ffffff !important;
     }
     .metric-label {
         font-size: 13px;
