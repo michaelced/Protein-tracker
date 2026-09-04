@@ -1,26 +1,73 @@
 import streamlit as st
 
-# Configure the page
-st.set_page_config(page_title="Night Shift Protein Tracker", page_icon="💪")
-st.title("Night Shift Protein & Recovery Tracker")
+# Configure the page with iOS-inspired layout feel
+st.set_page_config(
+    page_title="Protein Tracker", 
+    page_icon="⚡",
+    layout="centered"
+)
+
+# Custom CSS for a clean, iOS-inspired card/minimalist aesthetic
+st.markdown("""
+<style>
+    /* Global styling */
+    .stApp {
+        background-color: #f2f2f7;
+    }
+    
+    /* Hide default streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Container cards mimicking iOS grouped lists */
+    .ios-card {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        margin-bottom: 16px;
+    }
+    
+    /* Metric styling */
+    .metric-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1c1c1e;
+    }
+    .metric-label {
+        font-size: 13px;
+        color: #8e8e93;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# App Header
+st.markdown("### Protein Tracker")
+st.markdown("<p style='color: #8e8e93; margin-top: -15px;'>Log meals freely and monitor your daily goal</p>", unsafe_allow_html=True)
 
 # Set targets based on your 67kg (148lbs) weight
 MIN_TARGET = 107
 MAX_TARGET = 147
 
-st.write(f"**Your Daily Target:** {MIN_TARGET}g to {MAX_TARGET}g of protein")
+# Initialize session state for unlimited entries
+if "entries" not in st.session_state:
+    st.session_state.entries = [
+        {"food": "Rice with chicken", "protein": 25},
+        {"food": "2 eggs", "protein": 12},
+        {"food": "Rice with pork", "protein": 25},
+        {"food": "Whey protein shake", "protein": 25}
+    ]
 
-# Helper function to estimate protein based on food descriptions
+# Helper function to estimate protein based on food text description
 def estimate_protein(food_text):
     text = food_text.lower()
-    
-    # Simple keyword-based estimation logic for common night shift meals
     if not text:
         return 0
     elif "whey" in text or "protein powder" in text or "shake" in text:
         return 25
     elif "egg" in text:
-        # Count numbers if mentioned, otherwise assume 2 eggs
         if "4" in text: return 24
         if "3" in text: return 18
         if "1" in text: return 6
@@ -32,47 +79,67 @@ def estimate_protein(food_text):
     elif "fish" in text or "tuna" in text:
         return 22
     else:
-        # Default baseline if text is entered but doesn't match specific high-protein keywords
-        return 15
+        return 15  # Baseline estimate for general items
 
-# Create text input fields for your specific schedule
-st.subheader("Log What You're Eating")
-dinner_desc = st.text_input("6:00 PM Dinner (e.g., Rice with chicken)", value="Rice with chicken")
-snack_desc = st.text_input("10:00 PM Snack (e.g., 2 eggs)", value="2 eggs")
-pre_workout_desc = st.text_input("4:00 AM Pre-workout (e.g., Rice with pork)", value="Rice with pork")
-post_workout_desc = st.text_input("Post-workout Supplement (e.g., Whey protein shake)", value="Whey protein shake")
-
-# Automatically calculate protein based on descriptions
-dinner = estimate_protein(dinner_desc)
-snack = estimate_protein(snack_desc)
-pre_workout = estimate_protein(pre_workout_desc)
-post_workout = estimate_protein(post_workout_desc)
-
-# Show the estimated breakdown to the user
-st.subheader("Estimated Protein Breakdown")
-st.write(f"- **6:00 PM Dinner:** ~{dinner}g protein")
-st.write(f"- **10:00 PM Snack:** ~{snack}g protein")
-st.write(f"- **4:00 AM Pre-workout:** ~{pre_workout}g protein")
-st.write(f"- **Post-workout:** ~{post_workout}g protein")
-
-# Calculate the total
-total_protein = dinner + snack + pre_workout + post_workout
-
-# Display the progress bar
-st.subheader("Daily Progress")
+# --- SECTION 1: TODAY'S OVERVIEW ---
+total_protein = sum(item["protein"] for item in st.session_state.entries)
 progress_ratio = min(total_protein / MAX_TARGET, 1.0)
+
+st.markdown('<div class="ios-card">', unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown(f'<div class="metric-label">Total Protein</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="metric-value">{total_protein}g</div>', unsafe_allow_html=True)
+with col2:
+    st.markdown(f'<div class="metric-label">Target Range</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="metric-value">{MIN_TARGET}-{MAX_TARGET}g</div>', unsafe_allow_html=True)
+
+st.write("")
 st.progress(progress_ratio)
 
-st.write(f"**Current Total:** ~{total_protein}g")
-
-# Dynamic Assistant Feedback
-st.subheader("💡 Assistant Feedback")
-
+# Dynamic Feedback Message
 if total_protein < MIN_TARGET:
     shortfall = MIN_TARGET - total_protein
-    st.warning(f"You are roughly {shortfall}g short of your minimum muscle-building target. Try typing a larger meat portion or adding another egg.")
+    st.warning(f"You are roughly {shortfall}g short of your minimum muscle-building target.")
 elif MIN_TARGET <= total_protein <= MAX_TARGET:
-    st.success("Perfect! Your estimated intake hits your optimal protein window for muscle growth and recovery. Keep it up!")
+    st.success("You are right inside your optimal muscle growth window!")
 else:
-    st.info("You are above your maximum optimal target. You are very well-fueled for recovery!")
+    st.info("You have exceeded your max target. Well fueled!")
+st.markdown('</div>', unsafe_allow_html=True)
 
+
+# --- SECTION 2: ADD NEW FOOD ENTRY ---
+st.markdown('<div class="ios-card">', unsafe_allow_html=True)
+st.markdown("#### Add Food Entry")
+
+with st.form("add_form", clear_on_submit=True):
+    new_food = st.text_input("What did you eat?", placeholder="e.g., Greek yogurt, Steak, Shake...")
+    submitted = st.form_submit_button("Add to Log", use_container_width=True)
+    
+    if submitted and new_food:
+        calculated_protein = estimate_protein(new_food)
+        st.session_state.entries.append({"food": new_food, "protein": calculated_protein})
+        st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+
+# --- SECTION 3: LOGGED ITEMS (UNLIMITED LIST WITH DELETE) ---
+st.markdown('<div class="ios-card">', unsafe_allow_html=True)
+st.markdown("#### Today's Log")
+
+if not st.session_state.entries:
+    st.write("No food logged yet today.")
+else:
+    for i, entry in enumerate(st.session_state.entries):
+        cols = st.columns([4, 1, 1])
+        with cols[0]:
+            st.write(f"**{entry['food']}**")
+        with cols[1]:
+            st.write(f"~{entry['protein']}g")
+        with cols[2]:
+            if st.button("✕", key=f"del_{i}"):
+                st.session_state.entries.pop(i)
+                st.rerun()
+
+st.markdown('</div>', unsafe_allow_html=True)
