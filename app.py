@@ -7,10 +7,10 @@ st.set_page_config(
     layout="centered"
 )
 
-# Custom CSS for a clean, iOS-inspired card/minimalist aesthetic
+# Custom CSS for standard high-contrast readability (forcing dark text on light cards)
 st.markdown("""
 <style>
-    /* Global styling */
+    /* Global app background */
     .stApp {
         background-color: #f2f2f7;
     }
@@ -24,19 +24,30 @@ st.markdown("""
         background-color: #ffffff;
         padding: 20px;
         border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         margin-bottom: 16px;
+        color: #1c1c1e;
+    }
+    
+    /* Explicitly force all text inside markdown and headers to be dark and legible */
+    .ios-card h3, .ios-card h4, .ios-card p, .ios-card span, .ios-card div {
+        color: #1c1c1e !important;
+    }
+    
+    /* Fix standard Streamlit markdown text color inside the main app */
+    .stMarkdown p, .stMarkdown span, label {
+        color: #1c1c1e !important;
     }
     
     /* Metric styling */
     .metric-value {
         font-size: 28px;
         font-weight: 700;
-        color: #1c1c1e;
+        color: #1c1c1e !important;
     }
     .metric-label {
         font-size: 13px;
-        color: #8e8e93;
+        color: #8e8e93 !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -134,9 +145,9 @@ else:
     for i, entry in enumerate(st.session_state.entries):
         cols = st.columns([4, 1, 1])
         with cols[0]:
-            st.write(f"**{entry['food']}**")
+            st.markdown(f"**{entry['food']}**")
         with cols[1]:
-            st.write(f"~{entry['protein']}g")
+            st.markdown(f"~{entry['protein']}g")
         with cols[2]:
             if st.button("✕", key=f"del_{i}"):
                 st.session_state.entries.pop(i)
